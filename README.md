@@ -36,7 +36,7 @@ producer(s) `input_fn` to feed a dataset to the model.
 
 ## Installation
 
-Python 3.5+ and TensorFlow 0.12+ are required.
+Python 3.5+ and TensorFlow 0.12+ is required.
 
 ```
 pip3 install --user --upgrade tensorflow-qnd
@@ -223,7 +223,7 @@ step.
 
 ## Contributing
 
-Please send issues about any bugs, feature requests or questions, or pull
+Please submit issues of any bugs, feature requests or questions, or pull
 requests.
 
 
