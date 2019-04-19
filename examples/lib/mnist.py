@@ -3,8 +3,11 @@ import tensorflow as tf
 
 
 def _preprocess_image(image):
-    return tf.to_float(image) / 255 - 0.5
-
+    if(int(tf.__version__.split(".")[1])<13 and int(tf.__version__.split(".")[0])<2): ### For tf version < 1.13.0
+        return tf.to_float(image) / 255 - 0.5
+    else: ### For tf version >= 1.13.0
+        return tf.cast(image,tf.float32) / 255 - 0.5
+    
 
 def read_file(filename_queue):
     _, serialized = tf.TFRecordReader().read(filename_queue)
@@ -31,9 +34,14 @@ def serving_input_fn():
 
 
 def minimize(loss):
-    return tf.train.AdamOptimizer().minimize(
-        loss,
-        tf.contrib.framework.get_global_step())
+    if(int(tf.__version__.split(".")[1])<4 and int(tf.__version__.split(".")[0])==1) or int(tf.__version__.split(".")[0]) == 0: ### for tf version <1.4.0
+        return tf.train.AdamOptimizer().minimize(
+            loss,
+            tf.contrib.framework.get_global_step())
+    else: ###for version >= 1.4.0
+        return tf.train.AdamOptimizer().minimize(
+            loss,
+            tf.train.get_global_step())
 
 
 def def_model():
@@ -53,10 +61,14 @@ def def_model():
         loss = tf.reduce_mean(
             tf.nn.sparse_softmax_cross_entropy_with_logits(labels=number,
                                                            logits=h))
-
-        return predictions, loss, minimize(loss), {
-            "accuracy": tf.contrib.metrics.streaming_accuracy(predictions,
-                                                              number)[1],
-        }
-
+        if(int(tf.__version__.split(".")[1])<5 and int(tf.__version__.split(".")[0])==1) or int(tf.__version__.split(".")[0]) == 0: ### for tf version <1.5.0
+            return predictions, loss, minimize(loss), {
+                "accuracy": tf.contrib.metrics.streaming_accuracy(predictions,
+                                                                number)[1],
+            }
+        else: ###for version >= 1.5.0 the new api changed signature sequence
+            return predictions, loss, minimize(loss), {
+                "accuracy": tf.metrics.accuracy(number,
+                                                predictions)[1],
+            } 
     return model
